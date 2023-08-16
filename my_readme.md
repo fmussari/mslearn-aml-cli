@@ -73,24 +73,28 @@ az ml job list -o table
 ```azurecli
 az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job.yml -o table
 ```
-Both jobs got stacked on status **Preparing**. The message in the logs was: "Solving environment: ...working...".
 
-Let's see if it's the Environment what isn't working.
+**Result:**  
+Both jobs are stuck in the "Preparing" status. The logs show that the environment is being solved.  
+  
+Let's try with `AzureML-sklearn-0.24-ubuntu18.04-py37-cpu` environment to see if the custom environment is what is not working.
 
 ```azurecli
 az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job-AzureML-env.yml
 ```
 
-**Conclusion: The jobs didn't ran with Custom environment didn't ran.**
+**Result:**  
+The job ran with `AzureML-sklearn-0.24-ubuntu18.04-py37-cpu` environment but didn't ran with custom environment.
 
 
-`environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest` -> Work  
-`environment: azureml:basic-env-scikit@latest` -> Jobs stucks in **Preparing**  
+Work with: `environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest`  
+Didn't work with: `environment: azureml:basic-env-scikit@latest`  
+
+- Jobs are stuck in the **Preparing** status:  
+
+![](preparing_status.png)  
   
-
-![](preparing_status.png)
-
-After 1:30 h the job failed:
+- And after 1:30 h they fail:
 
 ![](failed_image_biuld.png)
 
