@@ -84,10 +84,10 @@ az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job-AzureML-env.y
 ```
 
 **Result:**  
-The job ran with `AzureML-sklearn-0.24-ubuntu18.04-py37-cpu` environment but didn't ran with custom environment.
+The job was successfully executed when using the "AzureML-sklearn-0.24-ubuntu18.04-py37-cpu" environment, but it failed when using the custom environment.
 
 
-Work with: `environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest`  
+Worked with: `environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest`  
 Didn't work with: `environment: azureml:basic-env-scikit@latest`  
 
 - Jobs are stuck in the **Preparing** status:  
