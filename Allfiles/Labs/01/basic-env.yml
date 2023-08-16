@@ -1,5 +1,6 @@
 $schema: https://azuremlschemas.azureedge.net/latest/environment.schema.json
 name: basic-env-scikit
-image: mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04
+#image: mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04
+image: mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04:latest
 conda_file: conda-envs/basic-env-cpu.yml
 description: Environment created from a Docker image plus Conda environment.

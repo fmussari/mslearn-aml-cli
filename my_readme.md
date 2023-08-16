@@ -8,8 +8,11 @@ az extension list --query "[].{name: name, version: version}" -o table
 
 ### Create an Azure resource group and set as default
 ```azurecli
+az group list -o table
+az group exists --name "rg-mlops-labs"
 az group create --name "rg-mlops-labs" --location "eastus"
 az configure --defaults group="rg-mlops-labs"
+az configure --list-defaults
 ```
 
 ### Create an Azure Machine Learning workspace and set as default
@@ -17,6 +20,7 @@ No need to specify Resource Group since it was set as default.
 ```azurecli
 az ml workspace create --name "mlw-mlops-labs"
 az configure --defaults workspace="mlw-mlops-labs"
+az configure --list-defaults -o table
 ```
 
 ### Create a compute instance in your workspace:  
@@ -34,11 +38,13 @@ az ml environment create --file ./Allfiles/Labs/01/basic-env.yml
 ### Create a dataset
 ```azurecli
 az ml data create --file ./Allfiles/Labs/01/data-local-path.yml
+az ml data list -o table
 ```
-This should be equivalent ([reference](https://learn.microsoft.com/en-us/cli/azure/ml/data?view=azure-cli-latest#az-ml-data-create)):
+This is equivalent ([reference](https://learn.microsoft.com/en-us/cli/azure/ml/data?view=azure-cli-latest#az-ml-data-create)):
 ```azurecli
-az ml data create --name diabetes-data --version 1 --path ./Allfiles/Labs/01/data -d "Dataset pointing to diabetes data stored as CSV on local computer. Data is uploaded to default datastore."
+az ml data create --name diabetes-data-2 --version 1 --path ./Allfiles/Labs/01/data -d "Dataset pointing to diabetes data stored as CSV on local computer. Data is uploaded to default datastore."
 ```
+
 ### Clean up resources
 ```azurecli
 az ml compute stop --name "ci71974" --no-wait
@@ -60,17 +66,44 @@ az ml compute create --name "ci71974" --size STANDARD_DS11_V2 --type ComputeInst
 ### Train a model
 ```azurecli
 az ml job create --file ./Allfiles/Labs/02/basic-job/basic-job.yml --web
+az ml job list -o table
 ```
 
 ### Train a model with dataset from datastore
 ```azurecli
-az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job.yml --web
+az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job.yml -o table
+```
+Both jobs got stacked on status **Preparing**. The message in the logs was: "Solving environment: ...working...".
+
+Let's see if it's the Environment what isn't working.
+
+```azurecli
+az ml job create --file ./Allfiles/Labs/02/input-data-job/data-job-AzureML-env.yml
 ```
 
-### Clean up resources
+**Conclusion: The jobs didn't ran with Custom environment didn't ran.**
+
+
+`environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest` -> Work  
+`environment: azureml:basic-env-scikit@latest` -> Jobs stucks in **Preparing**  
+  
+
+![](preparing_status.png)
+
+After 1:30 h the job failed:
+
+![](failed_image_biuld.png)
+
+See the log here: [20_image_build_log.txt](./Allfiles/20_image_build_log.txt)
+
+
+### Clean up resources (full work group)
 ```azurecli
-az ml compute stop --name "ci71974" --no-wait
+az group delete -n rg-mlops-labs
 ```
+
+
+
 
 ## Lab 03. Run a sweep job to tune hyperparameters
 

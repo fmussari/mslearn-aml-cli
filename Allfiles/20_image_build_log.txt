@@ -1,0 +1,93 @@
+2023/08/15 20:01:25 Downloading source code...
+2023/08/15 20:01:27 Finished downloading source code
+2023/08/15 20:01:27 Creating Docker network: acb_default_network, driver: 'bridge'
+2023/08/15 20:01:27 Successfully set up Docker network: acb_default_network
+2023/08/15 20:01:27 Setting up Docker configuration...
+2023/08/15 20:01:28 Successfully set up Docker configuration
+2023/08/15 20:01:28 Logging in to registry: 133cc1b2bd51493b9a4ff85af361894d.azurecr.io
+2023/08/15 20:01:29 Successfully logged into 133cc1b2bd51493b9a4ff85af361894d.azurecr.io
+2023/08/15 20:01:29 Volume source scriptsFromEms successfully created
+2023/08/15 20:01:29 Executing step ID: acb_step_0. Timeout(sec): 5400, Working directory: '', Network: 'acb_default_network'
+2023/08/15 20:01:29 Scanning for dependencies...
+2023/08/15 20:01:30 Successfully scanned dependencies
+2023/08/15 20:01:30 Launching container with name: acb_step_0
+Sending build context to Docker daemon  77.31kB
+Step 1/21 : FROM mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04@sha256:ef6728e7a83b30cff73b3bf8d7add9851e878877adeb4e9353a67ea19c9933eb
+mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04@sha256:ef6728e7a83b30cff73b3bf8d7add9851e878877adeb4e9353a67ea19c9933eb: Pulling from azureml/openmpi3.1.2-ubuntu18.04
+456d651ccb27: Pulling fs layer
+ff68c96a27bf: Pulling fs layer
+82c42f50cbcf: Pulling fs layer
+2dc2d9ff1378: Pulling fs layer
+d6d7c5170286: Pulling fs layer
+34216b94d364: Pulling fs layer
+3cab299da123: Pulling fs layer
+1c429f51569a: Pulling fs layer
+6a207c9c2a76: Pulling fs layer
+d3e61ef89dcb: Pulling fs layer
+2dc2d9ff1378: Waiting
+34216b94d364: Waiting
+3cab299da123: Waiting
+d6d7c5170286: Waiting
+1c429f51569a: Waiting
+6a207c9c2a76: Waiting
+d3e61ef89dcb: Waiting
+82c42f50cbcf: Verifying Checksum
+82c42f50cbcf: Download complete
+456d651ccb27: Verifying Checksum
+456d651ccb27: Download complete
+d6d7c5170286: Verifying Checksum
+d6d7c5170286: Download complete
+2dc2d9ff1378: Verifying Checksum
+2dc2d9ff1378: Download complete
+34216b94d364: Verifying Checksum
+34216b94d364: Download complete
+3cab299da123: Verifying Checksum
+3cab299da123: Download complete
+6a207c9c2a76: Verifying Checksum
+6a207c9c2a76: Download complete
+1c429f51569a: Verifying Checksum
+1c429f51569a: Download complete
+d3e61ef89dcb: Verifying Checksum
+d3e61ef89dcb: Download complete
+456d651ccb27: Pull complete
+ff68c96a27bf: Verifying Checksum
+ff68c96a27bf: Download complete
+ff68c96a27bf: Pull complete
+82c42f50cbcf: Pull complete
+2dc2d9ff1378: Pull complete
+d6d7c5170286: Pull complete
+34216b94d364: Pull complete
+3cab299da123: Pull complete
+1c429f51569a: Pull complete
+6a207c9c2a76: Pull complete
+d3e61ef89dcb: Pull complete
+Digest: sha256:ef6728e7a83b30cff73b3bf8d7add9851e878877adeb4e9353a67ea19c9933eb
+Status: Downloaded newer image for mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04@sha256:ef6728e7a83b30cff73b3bf8d7add9851e878877adeb4e9353a67ea19c9933eb
+ ---> a79caa0393e2
+Step 2/21 : USER root
+ ---> Running in a9c7e4244aca
+Removing intermediate container a9c7e4244aca
+ ---> c7584fc94278
+Step 3/21 : RUN mkdir -p $HOME/.cache
+ ---> Running in aba7fc0facc0
+Removing intermediate container aba7fc0facc0
+ ---> 8b4f2b72d981
+Step 4/21 : WORKDIR /
+ ---> Running in 2466e5fd2a8a
+Removing intermediate container 2466e5fd2a8a
+ ---> d2451e4e6875
+Step 5/21 : COPY azureml-environment-setup/99brokenproxy /etc/apt/apt.conf.d/
+ ---> 5e9dbc42547b
+Step 6/21 : RUN if dpkg --compare-versions `conda --version | grep -oE '[^ ]+$'` lt 4.4.11; then conda install conda==4.4.11; fi
+ ---> Running in 126f1b8dfdcf
+Removing intermediate container 126f1b8dfdcf
+ ---> dc1343313efd
+Step 7/21 : COPY azureml-environment-setup/mutated_conda_dependencies.yml azureml-environment-setup/mutated_conda_dependencies.yml
+ ---> 0094761c46cb
+Step 8/21 : RUN ldconfig /usr/local/cuda/lib64/stubs && conda env create -p /azureml-envs/azureml_4f2868948f58901f11d525a66fe80934 -f azureml-environment-setup/mutated_conda_dependencies.yml && rm -rf "$HOME/.cache/pip" && conda clean -aqy && CONDA_ROOT_DIR=$(conda info --root) && rm -rf "$CONDA_ROOT_DIR/pkgs" && find "$CONDA_ROOT_DIR" -type d -name __pycache__ -exec rm -rf {} + && ldconfig
+ ---> Running in 01edbc26f9ba
+Retrieving notices: ...working... done
+Collecting package metadata (repodata.json): ...working... 
+done
+Solving environment: ...working... 
+Run ID: ca1 timed out after 1h30m0s
