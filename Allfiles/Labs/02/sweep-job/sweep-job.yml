@@ -8,12 +8,13 @@ trial:
     --diabetes-csv ${{inputs.diabetes}} 
     --learning-rate ${{search_space.learning_rate}}
     --n-estimators ${{search_space.n_estimators}}
-  environment: azureml:basic-env-scikit@latest
+  #environment: azureml:basic-env-scikit@latest
+  environment: azureml:AzureML-sklearn-0.24-ubuntu18.04-py37-cpu@latest
 inputs:
   diabetes:
     path: azureml:diabetes-data:1
     mode: ro_mount
-compute: azureml:aml-cluster
+compute: azureml:aml-cluster-71974
 search_space:
   learning_rate:
     type: choice

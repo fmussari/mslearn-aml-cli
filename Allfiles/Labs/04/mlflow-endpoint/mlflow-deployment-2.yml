@@ -1,11 +1,11 @@
 $schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
-name: mlflow-deployment
+name: local-model-deployment-2
 endpoint_name: diabetes-mlflow-71974-1
-description: Deployment of a local model
+description: Deployment of a local model that was downloaded from a job
 model:
-  name: sample-mlflow-sklearn-model
+  name: local-sweet_rainbow_pxwv7qzw58
   version: 1
-  path: model
+  path: sweet_rainbow_pxwv7qzw58_2_output_mlflow_log_model_453546216/model
   type: mlflow_model
 #instance_type: Standard_F2s_v2
 instance_type: Standard_F4s_v2

@@ -1,0 +1,14 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: mlflow-deployment-2
+endpoint_name: diabetes-mlflow-71974-2
+description: Deployment of a local model
+model: azureml:azure-run-model:1
+  # To reference an existing model, use the azureml:<model-name>:<model-version> syntax.
+  # https://learn.microsoft.com/en-us/azure/machine-learning/reference-yaml-deployment-managed-online?view=azureml-api-2
+  #name: sample-mlflow-sklearn-model
+  #version: 1
+  #path: model
+  #type: mlflow_model
+#instance_type: Standard_F2s_v2
+instance_type: Standard_F4s_v2
+instance_count: 1

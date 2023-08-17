@@ -101,12 +101,10 @@ Didn't work with: `environment: azureml:basic-env-scikit@latest`
 See the log here: [20_image_build_log.txt](./Allfiles/20_image_build_log.txt)
 
 
-### Clean up resources (full work group)
+### Clean up resources (full resource group)
 ```azurecli
 az group delete -n rg-mlops-labs
 ```
-
-
 
 
 ## Lab 03. Run a sweep job to tune hyperparameters
@@ -116,6 +114,8 @@ To train multiple models in parallel, you’ll use a compute cluster to train th
 
 ```azurecli
 az ml compute create --name "aml-cluster-71974" --size STANDARD_DS11_V2 --max-instances 2 --type AmlCompute
+az ml compute list -o table
+az ml compute list-nodes -n aml-cluster-71974 -o table
 ```
 
 ### Run a sweep job
@@ -123,12 +123,13 @@ az ml compute create --name "aml-cluster-71974" --size STANDARD_DS11_V2 --max-in
 - **mslearn-aml-cli/Allfiles/Labs/02/sweep-job** -> **sweep-job.yml**
 
 ```azurecli
-az ml job create --file ./mslearn-aml-cli/Allfiles/Labs/02/sweep-job/sweep-job.yml
+az ml job create --file ./Allfiles/Labs/02/sweep-job/sweep-job.yml
 ```
 
 ### Clean up resources
 ```azurecli
 az ml compute delete --name "aml-cluster-71974" --no-wait --yes
+az ml compute list -o table
 ```
 
 ## Lab 04. Track Azure ML jobs with MLflow
@@ -140,41 +141,49 @@ az ml compute start --name "ci71974"
 
 ### Enable autologging
 
-- Note that you’ll run the **mlflow-autolog.py**
+- Note that **mlflow-job.yml** points to **mlflow-autolog.py**
 ```azurecli
-az ml job create --file ./mslearn-aml-cli/Allfiles/Labs/03/mlflow-job/mlflow-job.yml
+az ml job create --file ./Allfiles/Labs/03/mlflow-job/mlflow-job.yml
+az ml job list -o table
 ```
+
 ### Use logging functions to track custom metrics
 
-- Note that you’ll run the **custom-mlflow.py**
+- Note that **custom-mlflow-job.yml** points to **custom-mlflow.py**
 ```azurecli
-az ml job create --file ./mslearn-aml-cli/Allfiles/Labs/03/mlflow-job/custom-mlflow-job.yml
+az ml job create --file ./Allfiles/Labs/03/mlflow-job/custom-mlflow-job.yml
+az ml job list -o table
 ```
+
+
 
 ### Extra from *[Manage models with MLflow](https://learn.microsoft.com/en-us/training/modules/use-mlflow-azure-machine-learning-jobs-submitted-cli-v2/3-manage-models-mlflow)*
 
-```azurecli
-az ml model list
-```
 
 The output in the shell will show you the summary information of the job you submitted. It will show you the inputs you defined in the **mlflow-job.yml** file, and the details that Azure Machine Learning adds, like the name.  
   
 To download the output files using the CLI (2), first, set the current directory of the shell to where you want to download all job-related files to. Then, to actually download the files for a specific job, you use the following command:
 
 ```azurecli
-az ml job download --name <name>
+az ml model list -o table
+az ml job list -o table
+```
+
+```azurecli
+az ml job download --name mango_pizza_t4ddxk7vq5
+az ml model download --name azureml_sweet_rainbow_pxwv7qzw58_2_output_mlflow_log_model_453546216 --version 1
 ```
 
 To register a model, use the `ml model create` command.
 (By looking at the documentation it seems that `--local-path` is not the correct argument but `--path` instead)
 ```azurecli
-az ml model create --name churn-example --version 1 --local-path <name>/model/
+az ml model create --name <model_name> --version 1 --local-path <name>/model/
 ```
   
 How would it be to register the model without downloading it? Maybe like this:
 
 ```azurecli
-az ml model create --name my-model --version 1 --path runs:/<name>/model/ --type mlflow_model
+az ml model create --name <model_name> --version 1 --path runs:/<run_name>/model/ --type mlflow_model
 ```
 
 ### Clean up resources
@@ -190,12 +199,73 @@ az ml compute delete --name "ci71974" --no-wait --yes
 ...the name of the endpoint (setted in **create-endpoint.yml**) must be unique in the Azure region.
 
 ```azurecli
-az ml online-endpoint create --name diabetes-mlflow -f ./mslearn-aml-cli/Allfiles/Labs/04/mlflow-endpoint/create-endpoint.yml
+az ml online-endpoint create --name diabetes-mlflow-71974-1 -f ./Allfiles/Labs/04/mlflow-endpoint/create-endpoint.yml
 ```
-#### deploy the model
+**Note:** The name can be set in the command line or in the JSON file. In this lab, it is set in both places, but the command line value takes precedence.  
+  
+So this would be enough:  
+
 ```azurecli
-az ml online-deployment create --name mlflow-deployment --endpoint diabetes-mlflow -f ./mslearn-aml-cli/Allfiles/Labs/04/mlflow-endpoint/mlflow-deployment.yml --all-traffic
+az ml online-endpoint create -f ./Allfiles/Labs/04/mlflow-endpoint/create-endpoint.yml
+```  
+  
+Delete the one defined with the json (don't delete if you want to try the deployment of a not local azureml model):  
+```azurecli
+az ml online-endpoint delete --name diabetes-mlflow-71974-2
+az ml online-endpoint list -o table
 ```
+
+#### deploy the model
+
+Note: The model deployed here is in local folder **./model**.  
+
+```azurecli
+az ml online-deployment create --name local-model-deployment --endpoint diabetes-mlflow-71974-1 -f ./Allfiles/Labs/04/mlflow-endpoint/mlflow-deployment.yml --all-traffic
+```
+  
+If `Standard_F2s_v2` is specified in the **.yml**, the deployment ends with error:  
+`2023-08-16T14:52:20Z OutOfQuota: Container terminated due to insufficient memory. Please see troubleshooting guide, available here: https://aka.ms/oe-tsg#error-outofquota`   
+  
+The `instance_type` is asked to be changed to `Standard_F4s_v2` in the Lab5 Pull Requests, perhaps because this is a more powerful instance type that do handle the workload.  
+  
+**Now the error is `WARNING: Package(s) not found: azureml-inference-server-http`.**  
+
+![](faile_local_model_deployment.png)  
+  
+Probably applying the changes in the PR makes it work:  
+
+![](changes_in_local_model.png)  
+
+Which looks very similar to the files corresponding to the downloaded model:  
+[conda.yaml](./Allfiles/Labs/04/mlflow-endpoint/sweet_rainbow_pxwv7qzw58_2_output_mlflow_log_model_453546216/model/conda.yaml)  
+[MLmodel](./Allfiles/Labs/04/mlflow-endpoint/sweet_rainbow_pxwv7qzw58_2_output_mlflow_log_model_453546216/model/MLmodel)
+  
+
+Let's try with a local model, the downloaded in a previos session (the deployment name is already in the json):  
+
+```azurecli
+az ml online-deployment create --endpoint diabetes-mlflow-71974-1 -f ./Allfiles/Labs/04/mlflow-endpoint/mlflow-deployment-2.yml --all-traffic
+```
+
+**Great!!. It worked just fine.**
+
+
+#### What if I want to deploy a model that is not local?
+
+1. Register the model  
+
+- Create a model using mlflow run URI format 'runs:/<run-id>/<path-to-model-relative-to-the-root-of-the-artifact-location>' and command options
+```
+az ml model create --name azure-run-model --version 1 --path runs:/upbeat_guava_vthq7j975r/model/ --type mlflow_model
+```
+2. Deploy the azureml model specified in **mlflow-deployment-azureml.yml**  
+  
+```azurecli
+az ml online-deployment create --name mlflow-deployment-2 --endpoint diabetes-mlflow-71974-2 -f ./Allfiles/Labs/04/mlflow-endpoint/mlflow-deployment-azureml.yml --all-traffic
+```
+
+**Great!!. It worked just fine.**
+
 
 ### Extra from [*Deploy your model to a managed endpoint*](https://learn.microsoft.com/en-us/training/modules/deploy-azure-machine-learning-model-managed-endpoint-cli-v2/3-deploy-model-managed-endpoint)
 
@@ -204,21 +274,44 @@ For example, if after testing you want to reroute all traffic to the green deplo
 ```azurecli
 az ml online-endpoint update --name diabetes-mlflow --traffic "blue=0 green=100"
 ```
-
+  
 ### Test the endpoint
+  
+Again, looking at the PR it seems that the **sample-data.json** isn't in the correct format. Added **sample-data-new.json**.
+```azurecli
+az ml online-endpoint invoke --name diabetes-mlflow-71974-2 --request-file ./Allfiles/Labs/04/mlflow-endpoint/sample-data-new.json
+```
+Output:  
+```
+"[1, 0]"
+```
+
+**Great!!. It worked just fine.**  
 
 ```azurecli
-az ml online-endpoint invoke --name diabetes-mlflow --request-file ./mslearn-aml-cli/Allfiles/Labs/04/mlflow-endpoint/sample-data.json
+az ml online-endpoint invoke --name diabetes-mlflow-71974-1 --request-file ./Allfiles/Labs/04/mlflow-endpoint/sample-data-new.json
 ```
+Output:  
+```
+"[1, 0]"
+```
+**Great!!. It also worked fine.**  
+
 
 ### Clean up resources
 
+Delete deployment:
 ```azurecli
-az ml online-endpoint delete --name diabetes-mlflow --yes --no-wait
+az ml online-deployment delete --name <deplyment_name> --endpoint-name <endpoint_name> --yes
 ```
 
+```azurecli
+az ml online-endpoint delete --name diabetes-mlflow-71974-2 --yes --no-wait
+az ml online-endpoint delete --name diabetes-mlflow-71974-1 --yes --no-wait
+```
+  
 ## Lab 06. Run a pipeline with components
-
+  
 ### Start compute instance (if needed)
 
 ```azurecli
